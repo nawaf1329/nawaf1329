@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>A3 Directory Pro</title>
+<link rel="icon" type="image/png" href="logo.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+<style>
+/* --- 1. CORE VARIABLES --- */
+:root {
+  --bg-dark: #020617; /* Slate 950 */
+  --bg-card: #0f172a; /* Slate 900 */
+  --bg-glass: rgba(15, 23, 42, 0.75);
+  
+  --primary: #38bdf8; /* Sky 400 */
+  --primary-dim: rgba(56, 189, 248, 0.15);
+  --accent: #6366f1;  /* Indigo 500 */
+  --danger: #f43f5e;  /* Rose 500 */
+  --success: #10b981; /* Emerald 500 */
+  
+  --text-main: #f8fafc;
+  --text-sub: #94a3b8;
+  --border: rgba(255, 255, 255, 0.08);
+
+  --font-ui: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  
+  --header-height: 130px; /* Dynamic height handled by padding */
+}
+
+/* --- 2. GLOBAL RESET --- */
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+
+html, body {
+  margin: 0; padding: 0; width: 100%; height: 100%;
+  background: var(--bg-dark);
+  color: var(--text-main);
+  font-family: var(--font-ui);
+  overflow: hidden; /* App-like feel */
+}
+
+body {
+  display: flex; flex-direction: column;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(99, 102, 241, 0.08) 0%, transparent 40%);
+}
+
+/* --- 3. HEADER & STATS --- */
+header {
+  flex-shrink: 0;
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 1.5rem;
+  z-index: 50;
+  display: flex; flex-direction: column; gap: 1rem;
+}
+
+.top-bar {
+  display: flex; justify-content: space-between; align-items: center;
+}
+
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-icon { 
+  width: 42px; height: 42px; 
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  border: 1px solid var(--border); border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.brand-icon img { width: 28px; height: 28px; object-fit: contain; }
+
+.brand-text h1 { margin: 0; font-size: 1.25rem; font-weight: 800; letter-spacing: -0.03em; color: #fff; }
+.brand-text p { margin: 0; font-size: 0.75rem; color: var(--text-sub); font-weight: 500; }
+
+/* RRT BADGE */
+.rrt-badge {
+  display: flex; align-items: center; gap: 1rem;
+  background: rgba(30, 41, 59, 0.5);
+  padding: 6px 12px; border-radius: 99px;
+  border: 1px solid var(--border);
+}
+.rrt-section { display: flex; flex-direction: column; align-items: flex-start; line-height: 1; }
+.rrt-label { font-size: 0.6rem; text-transform: uppercase; color: var(--text-sub); font-weight: 700; margin-bottom: 2px; }
+.rrt-value { font-family: var(--font-mono); font-weight: 700; color: var(--danger); font-size: 1rem; }
+.rrt-divider { width: 1px; height: 20px; background: var(--border); }
+
+/* SEARCH BAR AREA */
+.controls { display: flex; gap: 10px; width: 100%; }
+
+.search-container {
+  position: relative; flex: 1;
+}
+.search-container input {
+  width: 100%; height: 44px;
+  background: #1e293b;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0 1rem 0 3rem;
+  color: white; font-size: 1rem;
+  font-family: var(--font-ui);
+  transition: all 0.2s;
+}
+.search-container input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+  background: #253045;
+}
+.search-icon {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  color: var(--text-sub); pointer-events: none;
+}
+
+.action-btn {
+  height: 44px; padding: 0 14px;
+  background: #1e293b; border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text-sub);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: 0.2s; font-weight: 600; font-size: 0.9rem;
+}
+.action-btn:hover { background: #334155; color: white; }
+.action-btn.active { background: var(--primary-dim); color: var(--primary); border-color: var(--primary); }
+
+/* --- 4. DATA LIST / TABLE --- */
+.content-area {
+  flex: 1; overflow-y: auto;
+  padding: 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+table {
+  width: 100%; border-collapse: collapse; table-layout: fixed;
+}
+
+thead {
+  position: sticky; top: 0; z-index: 10;
+  background: rgba(2, 6, 23, 0.95);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 1px 0 var(--border);
+}
+
+th {
+  text-align: left; padding: 12px 16px;
+  font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--text-sub); font-weight: 600; cursor: pointer;
+}
+
+td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+tr:last-child td { border-bottom: none; }
+
+/* DATA STYLING */
+.svc-name { display: block; font-weight: 600; color: var(--text-main); font-size: 0.95rem; }
+.svc-cat-sub { display: none; } /* Hidden on desktop, shown on mobile */
+.cat-badge { 
+  display: inline-block; padding: 4px 8px; border-radius: 6px; 
+  background: rgba(255,255,255,0.05); color: var(--text-sub); 
+  font-size: 0.75rem; font-weight: 500;
+}
+.ext-pill {
+  font-family: var(--font-mono); font-weight: 700; font-size: 1rem;
+  color: var(--primary); 
+  background: rgba(56, 189, 248, 0.1);
+  padding: 6px 10px; border-radius: 8px;
+  display: inline-block;
+}
+.fav-btn {
+  background: none; border: none; padding: 8px;
+  color: #475569; font-size: 1.2rem; cursor: pointer;
+  transition: transform 0.2s;
+}
+.fav-btn.active { color: #fbbf24; }
+.fav-btn:active { transform: scale(1.3); }
+
+/* --- 5. FOOTER --- */
+footer {
+  flex-shrink: 0;
+  padding: 12px 24px;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 0.75rem; color: var(--text-sub);
+}
+.status-indicator {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--success);
+  box-shadow: 0 0 8px var(--success);
+}
+
+/* --- 6. PRINTER OVERLAY (Bottom Sheet Style) --- */
+.overlay-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+  z-index: 100; opacity: 0; pointer-events: none;
+  transition: opacity 0.3s ease;
+  display: flex; flex-direction: column; justify-content: flex-end; /* Align bottom for mobile */
+}
+.overlay-backdrop.open { opacity: 1; pointer-events: auto; }
+
+.printer-sheet {
+  background: #1e293b;
+  width: 100%; max-width: 600px;
+  margin: 0 auto; /* Center on desktop */
+  border-radius: 20px 20px 0 0; /* Rounded top */
+  border: 1px solid var(--border);
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  max-height: 80vh; display: flex; flex-direction: column;
+}
+.overlay-backdrop.open .printer-sheet { transform: translateY(0); }
+
+@media (min-width: 600px) {
+  /* Center modal on desktop */
+  .overlay-backdrop { align-items: center; justify-content: center; }
+  .printer-sheet { border-radius: 20px; width: 500px; }
+}
+
+.sheet-header {
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.sheet-title { font-weight: 700; font-size: 1.1rem; color: white; display: flex; align-items: center; gap: 8px; }
+.close-btn { 
+  background: rgba(255,255,255,0.1); border: none; 
+  width: 32px; height: 32px; border-radius: 50%; color: white; 
+  cursor: pointer;
+}
+
+.sheet-body { overflow-y: auto; padding: 0; }
+.printer-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+}
+.p-name { color: var(--text-main); font-weight: 500; }
+.p-code { font-family: var(--font-mono); color: var(--accent); background: rgba(99,102,241,0.15); padding: 4px 8px; border-radius: 6px; font-size: 0.9rem; }
+
+/* --- 7. MOBILE OPTIMIZATION (THE MAGIC) --- */
+@media (max-width: 700px) {
+  header { padding: 1rem; gap: 0.8rem; }
+  
+  .top-bar { align-items: flex-start; }
+  .rrt-badge { flex-direction: column; gap: 4px; padding: 6px 10px; align-items: flex-end; border: none; background: transparent; }
+  .rrt-divider { display: none; }
+  .rrt-section { align-items: flex-end; margin-bottom: 4px; }
+  .rrt-value { font-size: 0.9rem; }
+
+  /* Mobile Table Transformation */
+  thead { display: none; } /* Hide headers */
+  
+  /* Make rows look like Cards/List Items */
+  tr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  
+  td { padding: 0; border: none; }
+  
+  /* Column 1: Star (Left) */
+  td:nth-child(1) { order: 3; width: auto; margin-left: 10px; }
+  
+  /* Column 2: Category (Hidden or Moved) */
+  td:nth-child(2) { display: none; } 
+  
+  /* Column 3: Service (Main content) */
+  td:nth-child(3) { 
+    order: 1; flex: 1; 
+    display: flex; flex-direction: column; justify-content: center;
+    overflow: hidden;
+  }
+  
+  /* Column 4: Extension (Right) */
+  td:nth-child(4) { order: 2; margin-left: 10px; }
+
+  /* Inject Category below Service Name */
+  .svc-name { font-size: 1rem; margin-bottom: 2px; }
+  .svc-cat-sub { display: block; font-size: 0.75rem; color: var(--text-sub); }
+  
+  /* Enhance Extension visibility */
+  .ext-pill { font-size: 1.1rem; padding: 8px 12px; background: rgba(56, 189, 248, 0.15); }
+}
+
+</style>
+</head>
+<body>
+
+<div class="app-container" style="display:flex; flex-direction:column; height:100%;">
+
+  <header>
+    <div class="top-bar">
+      <div class="brand">
+        <div class="brand-icon">
+          <img src="logo.png" alt="A3">
+        </div>
+        <div class="brand-text">
+          <h1>A3 DIRECTORY</h1>
+          <p>Internal Unit Extensions</p>
+        </div>
+      </div>
+      
+      <div class="rrt-badge">
+        <div class="rrt-section">
+          <span class="rrt-label">Adult RRT</span>
+          <span class="rrt-value">49337</span>
+        </div>
+        <div class="rrt-divider"></div>
+        <div class="rrt-section">
+          <span class="rrt-label">Peds RRT</span>
+          <span class="rrt-value">45381</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="search-container">
+        <span class="search-icon">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </span>
+        <input id="search" type="text" placeholder="Search..." autocomplete="off">
+      </div>
+      
+      <button id="btn-fav" class="action-btn">
+        <span style="font-size:1.2rem; line-height:0;">★</span>
+      </button>
+      
+      <button class="action-btn" onclick="openPrinterSheet()">
+        <span style="font-size:1.2rem; line-height:0;">🖨️</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="content-area">
+    <table id="main-table">
+      <thead>
+        <tr>
+          <th width="50" style="text-align:center">Fav</th>
+          <th width="120">Category</th>
+          <th>Service Name</th>
+          <th width="100" style="text-align:right">Ext</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <footer>
+    <div style="display:flex; gap:10px; align-items:center;">
+       <span>F1520110</span>
+       <button onclick="resizeText()" style="background:transparent; border:1px solid #334155; color:#94a3b8; border-radius:4px; padding:2px 6px; font-size:10px;">Aa</button>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px;">
+      Live Data <div id="sync-dot" class="status-indicator"></div>
+    </div>
+  </footer>
+
+</div>
+
+<div id="printer-overlay" class="overlay-backdrop">
+  <div class="printer-sheet">
+    <div class="sheet-header">
+      <div class="sheet-title">
+        <span>🖨️</span> Printer Configuration
+      </div>
+      <button class="close-btn" onclick="closePrinterSheet()">✕</button>
+    </div>
+    <div class="sheet-body" id="printer-list">
+      </div>
+  </div>
+</div>
+
+<script>
+/**
+ * A3 Directory Logic - Version 5 (Mobile Optimized)
+ * Unchanged logic, new renderer.
+ */
+
+// --- CONFIG ---
+const STORAGE_KEY_DATA = 'a3_data_v5';
+const STORAGE_KEY_FAV  = 'a3_fav_v5';
+let data = [];
+let favorites = new Set();
+let isFavMode = false;
+let currentFontSize = 14;
+
+// --- PRINTER DATA ---
+const printers = [
+  { device: 'RINPA0301B',  name: 'Label Printer A' },
+  { device: 'RNURB0202B',  name: 'Label Printer B' },
+  { device: 'RNURA0301Z',  name: 'Printer (A3)' },
+  { device: 'nurse_a3',    name: 'A3 PC Login' },
+  { device: 'KFSH#3709',   name: 'PC Password' }
+];
+
+// --- ELEMENTS ---
+const tbody = document.getElementById('tbody');
+const searchInput = document.getElementById('search');
+const btnFav = document.getElementById('btn-fav');
+const syncDot = document.getElementById('sync-dot');
+const printerOverlay = document.getElementById('printer-overlay');
+const printerList = document.getElementById('printer-list');
+
+// --- INITIALIZATION ---
+function init() {
+  const f = localStorage.getItem(STORAGE_KEY_FAV);
+  if(f) favorites = new Set(JSON.parse(f));
+
+  const d = localStorage.getItem(STORAGE_KEY_DATA);
+  if(d) {
+    try { data = JSON.parse(d)||[]; } catch(e){ data=[]; }
+    render();
+  }
+
+  fetchData();
+}
+
+// --- DATA FETCHING (UNCHANGED) ---
+function fetchData() {
+  syncDot.style.opacity = '0.3';
+  syncDot.style.background = '#fbbf24'; // Warning color while fetching
+  const script = document.createElement('script');
+  script.src = "https://script.google.com/macros/s/AKfycby9t71TVzAJyzRDczYYtLh7oIIq9J4jEvyddy7Bc-BAunFMTuYEwerlscLHjfKw0orA/exec";
+  document.body.appendChild(script);
+}
+
+function callback(response) {
+  syncDot.style.opacity = '1';
+  syncDot.style.background = '#10b981'; // Success color
+  
+  const prev = localStorage.getItem(STORAGE_KEY_DATA);
+  const next = JSON.stringify(response);
+  if(prev !== next || data.length === 0) {
+    localStorage.setItem(STORAGE_KEY_DATA, next);
+    data = response;
+    render();
+  }
+}
+
+// --- RENDER LOGIC ---
+function render() {
+  tbody.innerHTML = '';
+  const q = searchInput.value.toLowerCase().trim();
+  
+  // Filter
+  const list = data.filter(row => {
+    const key = makeKey(row);
+    if (isFavMode && !favorites.has(key)) return false;
+    if (!q) return true;
+    
+    return (row.category||'').toLowerCase().includes(q) ||
+           (row.service||'').toLowerCase().includes(q) ||
+           (row.extension||'').toString().includes(q);
+  });
+
+  // Sort (Simple alpha sort on Service)
+  list.sort((a,b) => (a.service||'').localeCompare(b.service||''));
+
+  if(list.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:3rem; color:var(--text-sub)">No results found</td></tr>`;
+    return;
+  }
+
+  const frag = document.createDocumentFragment();
+  list.forEach(row => {
+    const key = makeKey(row);
+    const isFav = favorites.has(key);
+    
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="text-align:center;">
+        <button class="fav-btn ${isFav?'active':''}" onclick="toggleFav('${key}')">★</button>
+      </td>
+      <td><span class="cat-badge">${row.category||''}</span></td>
+      <td>
+        <span class="svc-name">${row.service||''}</span>
+        <span class="svc-cat-sub">${row.category||''}</span>
+      </td>
+      <td style="text-align:right;">
+        <span class="ext-pill">${row.extension||''}</span>
+      </td>
+    `;
+    frag.appendChild(tr);
+  });
+  tbody.appendChild(frag);
+}
+
+function toggleFav(key) {
+  if(favorites.has(key)) favorites.delete(key);
+  else favorites.add(key);
+  localStorage.setItem(STORAGE_KEY_FAV, JSON.stringify([...favorites]));
+  render();
+}
+
+function makeKey(r) { return `${r.category}|${r.service}|${r.extension}`; }
+
+// --- UI ACTIONS ---
+searchInput.addEventListener('input', render);
+
+btnFav.addEventListener('click', () => {
+  isFavMode = !isFavMode;
+  btnFav.classList.toggle('active', isFavMode);
+  render();
+});
+
+// Printer Sheet Logic
+function openPrinterSheet() {
+  printerList.innerHTML = '';
+  printers.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'printer-row';
+    div.innerHTML = `
+      <span class="p-name">${p.name}</span>
+      <span class="p-code">${p.device}</span>
+    `;
+    printerList.appendChild(div);
+  });
+  
+  printerOverlay.style.display = 'flex';
+  // Small delay to allow display:flex to apply before opacity transition
+  setTimeout(() => printerOverlay.classList.add('open'), 10);
+}
+
+function closePrinterSheet() {
+  printerOverlay.classList.remove('open');
+  setTimeout(() => { printerOverlay.style.display = 'none'; }, 300);
+}
+
+// Quick Text Resizer
+function resizeText() {
+  currentFontSize = currentFontSize === 14 ? 16 : 14;
+  document.body.style.fontSize = currentFontSize + 'px';
+}
+
+// Start
+init();
+
+</script>
+</body>
+</html>
